@@ -16,6 +16,6 @@ public class AlertRabbitTest {
     @Test
     public void whenIntervalProperti() {
         int interval = AlertRabbit.interval("rabbit.properties");
-        assertThat(interval, is(10));
+        assertThat(interval, is(5));
     }
 }

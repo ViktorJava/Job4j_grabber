@@ -4,6 +4,8 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.quartz.JobBuilder.*;
@@ -21,10 +23,15 @@ import static org.quartz.TriggerBuilder.*;
 public class AlertRabbit {
     public static void main(String[] args) {
         try {
+            List<Long> store = new ArrayList<>();
             //Конфигурирование.
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
-            JobDetail job = newJob(Rabbit.class).build();
+            JobDataMap data = new JobDataMap();
+            data.put("store", store);
+            JobDetail job = newJob(Rabbit.class)
+                    .usingJobData(data)
+                    .build();
             //Создание расписания.
             SimpleScheduleBuilder times = simpleSchedule()
                     .withIntervalInSeconds(interval("rabbit.properties"))
@@ -36,7 +43,10 @@ public class AlertRabbit {
                     .build();
             //Загрузка задачи и триггера в планировщик
             scheduler.scheduleJob(job, trigger);
-        } catch (SchedulerException se) {
+            Thread.sleep(10000);
+            scheduler.shutdown();
+            System.out.println(store);
+        } catch (Exception se) {
             se.printStackTrace();
         }
     }
@@ -65,9 +75,18 @@ public class AlertRabbit {
      * Класс который отрабатывает с периодичностью.
      */
     public static class Rabbit implements Job {
+        public Rabbit() {
+            System.out.println(hashCode());
+        }
+
         @Override
         public void execute(JobExecutionContext context) {
             System.out.println("Rabbit runs here ...");
+            List<Long> store = (List<Long>) context
+                    .getJobDetail()
+                    .getJobDataMap()
+                    .get("store");
+            store.add(System.currentTimeMillis());
         }
     }
 }
