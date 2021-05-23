@@ -3,7 +3,12 @@ package quartz;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -21,20 +26,28 @@ import static org.quartz.TriggerBuilder.*;
  * @since 20.05.2021
  */
 public class AlertRabbit {
+
+    private Properties properties;
+
+    public AlertRabbit(Properties properties) {
+        this.properties = properties;
+    }
+
     public static void main(String[] args) {
-        try {
-            List<Long> store = new ArrayList<>();
-            //Конфигурирование.
+        AlertRabbit alertRabbit = new AlertRabbit(getProperties("rabbit.properties"));
+
+        try (Connection cn = alertRabbit.initDataBase(alertRabbit.properties)) {
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
+
             JobDataMap data = new JobDataMap();
-            data.put("store", store);
+            data.put("store", cn);
             JobDetail job = newJob(Rabbit.class)
                     .usingJobData(data)
                     .build();
             //Создание расписания.
             SimpleScheduleBuilder times = simpleSchedule()
-                    .withIntervalInSeconds(interval("rabbit.properties"))
+                    .withIntervalInSeconds(interval(alertRabbit.properties))
                     .repeatForever();
             //В триггере можно указать, когда начинать запуск.
             Trigger trigger = newTrigger()
@@ -45,30 +58,39 @@ public class AlertRabbit {
             scheduler.scheduleJob(job, trigger);
             Thread.sleep(10000);
             scheduler.shutdown();
-            System.out.println(store);
-        } catch (Exception se) {
-            se.printStackTrace();
+            System.out.println(cn);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Метод получает имя properties файла, возвращает интервал.
-     *
-     * @param path Имя файла properties.
-     * @return Интервал считанный в файле.
-     */
-    public static int interval(String path) {
-        String interval;
+    private Connection initDataBase(Properties properties) throws
+            ClassNotFoundException, SQLException {
+        Class.forName(properties.getProperty("driver-class-name"));
+        return DriverManager.getConnection(
+                properties.getProperty("url"),
+                properties.getProperty("username"),
+                properties.getProperty("password"));
+    }
+
+
+    private static Properties getProperties(String path) {
+        Properties properties = new Properties();
         try (InputStream in = AlertRabbit.class
                 .getClassLoader()
                 .getResourceAsStream(path)) {
-            Properties config = new Properties();
-            config.load(in);
-            interval = config.getProperty("rabbit.interval");
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+            properties.load(in);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return Integer.parseInt(interval);
+        return properties;
+    }
+
+
+    public static int interval(Properties properties) {
+        return Integer.parseInt(properties.getProperty("rabbit.interval"));
     }
 
     /**
@@ -82,11 +104,17 @@ public class AlertRabbit {
         @Override
         public void execute(JobExecutionContext context) {
             System.out.println("Rabbit runs here ...");
-            List<Long> store = (List<Long>) context
+            Connection cn = (Connection) context
                     .getJobDetail()
                     .getJobDataMap()
                     .get("store");
-            store.add(System.currentTimeMillis());
+            try (PreparedStatement ps = cn
+                    .prepareStatement("insert into rabbit(created_date) values (?)")) {
+                ps.setLong(1, System.currentTimeMillis());
+                ps.execute();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 }
