@@ -1,11 +1,8 @@
 package utils;
 
-import java.sql.SQLOutput;
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,12 +43,21 @@ public class SqlRuDateTimeParser implements DateTimeParser {
             return LocalDateTime.now().minusDays(1);
         }
         String[] splitDateTime = parse.split(", ");
+        if (splitDateTime.length != 2) {
+            throw new IllegalArgumentException("Wrong DateTime format...");
+        }
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN);
         StringBuilder sb = new StringBuilder();
         String[] splitDate = splitDateTime[0].split(" ");
+        if (splitDate.length != 3) {
+            throw new IllegalArgumentException("Wrong date format...");
+        }
         int day = Integer.parseInt(splitDate[0]);
-        int mo = MD.get(splitDate[1]);
         int year = Integer.parseInt(splitDate[2]) + 2000;
+        Integer mo = MD.get(splitDate[1]);
+        if (mo == null) {
+            throw new IllegalArgumentException("Wrong month format...");
+        }
         LocalDateTime localDate = LocalDate
                 .of(year, mo, day)
                 .atTime(LocalTime.parse(splitDateTime[1]));
