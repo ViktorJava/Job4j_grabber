@@ -1,7 +1,7 @@
 # Проект Job4jGrabber [<img alt="Logo" src="images/logo.png" height="80" align="right"/>](https://www.vectorlogo.zone)
 > Агрегатор Java вакансий...
 
-[![Build Status](https://travis-ci.org/ViktorJava/job4j_tracker.svg?branch=master)](https://travis-ci.org/ViktorJava/job4j_tracker)
+[![Build Status](https://travis-ci.org/ViktorJava/job4j_grabber.svg?branch=master)](https://travis-ci.org/ViktorJava/job4j_grabber)
 [![codecov](https://codecov.io/gh/ViktorJava/Job4j_grabber/branch/master/graph/badge.svg?token=12R9O7H1N2)](https://codecov.io/gh/ViktorJava/Job4j_grabber)
 
 ## Технологии и инструменты:
@@ -17,6 +17,7 @@
 <img src="images/postgresql.png" alt="PSQL"  height="45"/>
 <img src="images/jcf.png" alt="JCF"  width="90"/>
 <img src="images/liquibase.png" alt="liquibase" height="30"/>
+<img src="images/jsoup.png" alt="liquibase" height="30"/>
 </p>
 
 Система запускается по расписанию. Период запуска указывается в настройках - `app.properties`. 
