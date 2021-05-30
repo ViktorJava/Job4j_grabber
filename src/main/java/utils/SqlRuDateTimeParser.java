@@ -3,7 +3,6 @@ package utils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +14,6 @@ import java.util.Map;
  * @since 24.05.2021
  */
 public class SqlRuDateTimeParser implements DateTimeParser {
-    private static final String PATTERN = "dd MM yyyy kk:mm";
-
-
     private static final Map<String, Integer> MD = new HashMap<>() {
         {
             put("янв", 1);
@@ -37,18 +33,22 @@ public class SqlRuDateTimeParser implements DateTimeParser {
 
     @Override
     public LocalDateTime parse(String parse) {
-        if (parse.contains("сегодня")) {
-            return LocalDateTime.now();
-        } else if (parse.contains("вчера")) {
-            return LocalDateTime.now().minusDays(1);
-        }
         String[] splitDateTime = parse.split(", ");
         if (splitDateTime.length != 2) {
             throw new IllegalArgumentException("Wrong DateTime format...");
         }
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN);
-        StringBuilder sb = new StringBuilder();
-        String[] splitDate = splitDateTime[0].split(" ");
+        LocalDate localDate = convertDate(splitDateTime[0]);
+        LocalTime localTime = LocalTime.parse(splitDateTime[1]);
+        return LocalDateTime.of(localDate, localTime);
+    }
+
+    public LocalDate convertDate(String date) {
+        if (date.contains("сегодня")) {
+            return LocalDate.now();
+        } else if (date.contains("вчера")) {
+            return LocalDate.now().minusDays(1);
+        }
+        String[] splitDate = date.split(" ");
         if (splitDate.length != 3) {
             throw new IllegalArgumentException("Wrong date format...");
         }
@@ -58,10 +58,6 @@ public class SqlRuDateTimeParser implements DateTimeParser {
         if (mo == null) {
             throw new IllegalArgumentException("Wrong month format...");
         }
-        LocalDateTime localDate = LocalDate
-                .of(year, mo, day)
-                .atTime(LocalTime.parse(splitDateTime[1]));
-        sb.append(localDate.format(dateTimeFormatter));
-        return LocalDateTime.parse(sb, dateTimeFormatter);
+        return LocalDate.of(year, mo, day);
     }
 }
