@@ -33,7 +33,6 @@ public class SqlRuParse {
      * @throws IOException Возможное исключение.
      */
     private void parsePage(String url) throws IOException {
-        SqlRuDateTimeParser sqlRuDateTimeParser = new SqlRuDateTimeParser();
         Document doc = Jsoup.connect(url).get();
         Elements row = doc.select(".postslisttopic");
         for (Element td: row) {
@@ -42,12 +41,7 @@ public class SqlRuParse {
             System.out.println(postUrl);
             System.out.println(href.text());
             System.out.println(getDescription(postUrl));
-            //Element dateTime = td.parent().child(5);
-            //LocalDateTime ldt = sqlRuDateTimeParser.parse(String.valueOf(dateTime.text()));
-            //System.out.println(dateTime.text());
-            //System.out.println(ldt);
             System.out.println(date(postUrl));
-            //System.out.println(date(href.attr("href")));
         }
     }
 
