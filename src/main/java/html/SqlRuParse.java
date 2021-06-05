@@ -8,41 +8,70 @@ import utils.SqlRuDateTimeParser;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * <h2>Класс парсит заданный сайт, в размере 2 страниц.</h2>
  * https://www.sql.ru/forum/job-offers
  *
  * @author ViktorJava (gipsyscrew@gmail.com)
- * @version 0.1
+ * @version 1.1
  * @since 23.05.2021
  */
-public class SqlRuParse {
-    public static void main(String[] args) throws IOException {
+public class SqlRuParse implements Parser {
+    public static void main(String[] args) {
         SqlRuParse sqlRuParse = new SqlRuParse();
         String url = "https://www.sql.ru/forum/job-offers/";
         for (int i = 1; i <= 2; i++) {
-            sqlRuParse.parsePage(url + i);
+            System.out.println(sqlRuParse.list(url + i));
         }
     }
 
     /**
-     * Метод парсит сайт по заданному адресу.
+     * Загрузка списка всех постов.
      *
-     * @param url Адрес сайта.
-     * @throws IOException Возможное исключение.
+     * @param link Ссылка на страницу с постами.
+     * @return Список постов.
      */
-    private void parsePage(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
-        Elements row = doc.select(".postslisttopic");
-        for (Element td: row) {
-            Element href = td.child(0);
-            String postUrl = href.attr("href");
-            System.out.println(postUrl);
-            System.out.println(href.text());
-            System.out.println(getDescription(postUrl));
-            System.out.println(date(postUrl));
+    @Override
+    public List<Post> list(String link) {
+        List<Post> posts = new ArrayList<>();
+        try {
+            Document doc = Jsoup.connect(link).get();
+            Elements row = doc.select(".postslisttopic");
+            for (Element td: row) {
+                Element href = td.child(0);
+                String postUrl = href.attr("href");
+                posts.add(detail(postUrl));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return posts;
+    }
+
+    /**
+     * Метод загрузки деталей одного поста.
+     *
+     * @param link Ссылка на страницу поста.
+     * @return Объект типа Post.
+     */
+    @Override
+    public Post detail(String link) {
+        Post post = new Post();
+        try {
+            Document doc = Jsoup.connect(link).get();
+            post.setLink(link); //ссылка поста
+            post.setHeading(doc.select(".messageHeader")
+                               .get(0).text().trim());
+            post.setText(getDescription(link));
+            post.setCreated(date(link));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return post;
     }
 
     /**

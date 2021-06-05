@@ -10,34 +10,27 @@ import java.time.LocalDateTime;
  * @since 29.05.2021
  */
 public class Post {
-    private int id;
-    private String name;
-    private String text;
-    private String link;
-    private LocalDateTime created;
+    private String heading; //заголовок поста
+    private String text; //содержимое поста
+    private String link; //ссылка на пост
+    private LocalDateTime created; //дата создания поста
 
-    public Post(int id, String name, String text, String link, LocalDateTime created) {
-        this.id = id;
-        this.name = name;
+    public Post() {
+    }
+
+    public Post(String heading, String text, String link, LocalDateTime created) {
+        this.heading = heading;
         this.text = text;
         this.link = link;
         this.created = created;
     }
 
-    public int getId() {
-        return id;
+    public String getHeading() {
+        return heading;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public void setHeading(String heading) {
+        this.heading = heading;
     }
 
     public String getText() {
@@ -62,5 +55,15 @@ public class Post {
 
     public void setCreated(LocalDateTime created) {
         this.created = created;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{"
+                + "heading='" + heading + '\''
+                + ", text='" + text + '\''
+                + ", link='" + link + '\''
+                + ", created=" + created + '}'
+                + "\n\n";
     }
 }
