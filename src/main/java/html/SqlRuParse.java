@@ -17,7 +17,7 @@ import java.util.List;
  * https://www.sql.ru/forum/job-offers
  *
  * @author ViktorJava (gipsyscrew@gmail.com)
- * @version 1.1
+ * @version 1.2
  * @since 23.05.2021
  */
 public class SqlRuParse implements Parser {
@@ -66,8 +66,8 @@ public class SqlRuParse implements Parser {
             post.setLink(link); //ссылка поста
             post.setHeading(doc.select(".messageHeader")
                                .get(0).text().trim());
-            post.setText(getDescription(link));
-            post.setCreated(date(link));
+            post.setText(getDescription(doc));
+            post.setCreated(getDate(doc));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,12 +77,11 @@ public class SqlRuParse implements Parser {
     /**
      * Метод возвращает описание поста.
      *
-     * @param url Ссылка на пост.
+     * @param doc Страница для парсинга.
      * @return Строковое представление поста.
      * @throws IOException Возможное исключение.
      */
-    private String getDescription(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
+    private String getDescription(Document doc) throws IOException {
         Elements row = doc.select(".msgBody");
         return row.get(1).text();
     }
@@ -90,12 +89,11 @@ public class SqlRuParse implements Parser {
     /**
      * Метод возвращает дату публикации поста.
      *
-     * @param url Ссылка на пост.
+     * @param doc Страница для парсинга.
      * @return Дата и время публикации поста.
      * @throws IOException Возможное исключение.
      */
-    private LocalDateTime date(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
+    private LocalDateTime getDate(Document doc) throws IOException {
         Elements row = doc.select(".msgFooter");
         String data = row.get(0).text().split("\\[")[0].trim();
         return new SqlRuDateTimeParser().parse(data);
