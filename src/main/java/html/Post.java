@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  */
 public class Post {
     private int id;
-    private String heading;
+    private String name;
     private String text;
     private String link;
     private LocalDateTime created;
@@ -19,9 +19,9 @@ public class Post {
     public Post() {
     }
 
-    public Post(int id, String heading, String text, String link, LocalDateTime created) {
+    public Post(int id, String name, String text, String link, LocalDateTime created) {
         this.id = id;
-        this.heading = heading;
+        this.name = name;
         this.text = text;
         this.link = link;
         this.created = created;
@@ -35,12 +35,12 @@ public class Post {
         this.id = id;
     }
 
-    public String getHeading() {
-        return heading;
+    public String getName() {
+        return name;
     }
 
-    public void setHeading(String heading) {
-        this.heading = heading;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getText() {
@@ -70,8 +70,8 @@ public class Post {
     @Override
     public String toString() {
         return "Post{"
-                + "heading='" + heading + '\''
-                + ", id='" + id + '\''
+                + "id='" + id + '\''
+                + ", name='" + name + '\''
                 + ", text='" + text + '\''
                 + ", link='" + link + '\''
                 + ", created=" + created + '}'

@@ -64,8 +64,8 @@ public class SqlRuParse implements Parser {
         try {
             Document doc = Jsoup.connect(link).get();
             post.setLink(link); //ссылка поста
-            post.setHeading(doc.select(".messageHeader")
-                               .get(0).text().trim());
+            post.setName(doc.select(".messageHeader")
+                            .get(0).text().trim());
             post.setText(getDescription(doc));
             post.setCreated(getDate(doc));
         } catch (IOException e) {

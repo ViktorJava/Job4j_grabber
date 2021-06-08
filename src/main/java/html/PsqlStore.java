@@ -42,7 +42,7 @@ public class PsqlStore implements Store, AutoCloseable {
         try {
             PreparedStatement ps = cnn.prepareStatement(
                     "insert into post (name, text, link, created) values (?, ?, ?, ?)");
-            ps.setString(1, post.getHeading());
+            ps.setString(1, post.getName());
             ps.setString(2, post.getText());
             ps.setString(3, post.getLink());
             ps.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
@@ -86,7 +86,24 @@ public class PsqlStore implements Store, AutoCloseable {
      */
     @Override
     public Post findById(String id) {
-        return null;
+        Post post = new Post();
+        try (PreparedStatement statement = cnn.prepareStatement("select * from post where id = ?")) {
+            statement.setInt(1, Integer.parseInt(id));
+            statement.execute();
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                post.setId(resultSet.getInt("id"));
+                post.setName(resultSet.getString("name"));
+                post.setText(resultSet.getString("text"));
+                post.setLink(resultSet.getString("link"));
+                post.setCreated(resultSet
+                        .getTimestamp("created")
+                        .toLocalDateTime());
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return post;
     }
 
     /**
@@ -111,5 +128,6 @@ public class PsqlStore implements Store, AutoCloseable {
         psqlStore.save(java);
         psqlStore.save(sql);
         System.out.println(psqlStore.getAll());
+        System.out.println(psqlStore.findById("2"));
     }
 }
