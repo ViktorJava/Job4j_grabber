@@ -39,9 +39,8 @@ public class PsqlStore implements Store, AutoCloseable {
      */
     @Override
     public void save(Post post) {
-        try {
-            PreparedStatement ps = cnn.prepareStatement(
-                    "insert into post (name, text, link, created) values (?, ?, ?, ?)");
+        try (PreparedStatement ps = cnn.prepareStatement(
+                "insert into post (name, text, link, created) values (?, ?, ?, ?)")) {
             ps.setString(1, post.getName());
             ps.setString(2, post.getText());
             ps.setString(3, post.getLink());
@@ -82,23 +81,24 @@ public class PsqlStore implements Store, AutoCloseable {
      * Поиск записи в базе данных по уникальному идентификатору.
      *
      * @param id Идентификатор записи.
-     * @return Объявление найденное по id.
+     * @return Метод возвращает объявление найденное по id
+     * или null если нет объявления с заданным id.
      */
     @Override
     public Post findById(String id) {
-        Post post = new Post();
+        Post post = null;
         try (PreparedStatement statement = cnn.prepareStatement("select * from post where id = ?")) {
             statement.setInt(1, Integer.parseInt(id));
             statement.execute();
             ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                post.setId(resultSet.getInt("id"));
-                post.setName(resultSet.getString("name"));
-                post.setText(resultSet.getString("text"));
-                post.setLink(resultSet.getString("link"));
-                post.setCreated(resultSet
-                        .getTimestamp("created")
-                        .toLocalDateTime());
+            if (resultSet.next()) {
+                post = new Post(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("text"),
+                        resultSet.getString("link"),
+                        resultSet.getTimestamp("created")
+                                 .toLocalDateTime());
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
