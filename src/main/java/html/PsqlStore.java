@@ -1,5 +1,6 @@
 package html;
 
+
 import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,21 +15,17 @@ import java.util.Properties;
  * @since 06.06.2021
  */
 public class PsqlStore implements Store, AutoCloseable {
-    private final Connection cnn;
+    private Connection cnn;
 
     public PsqlStore(Properties cfg) {
-        try (InputStream in = PsqlStore.class
-                .getClassLoader()
-                .getResourceAsStream("psql.properties")) {
-            cfg.load(in);
+        try {
             Class.forName(cfg.getProperty("jdbc.driver"));
             cnn = DriverManager.getConnection(
                     cfg.getProperty("jdbc.url"),
                     cfg.getProperty("jdbc.username"),
-                    cfg.getProperty("jdbc.password")
-            );
+                    cfg.getProperty("jdbc.password"));
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            e.printStackTrace();
         }
     }
 
@@ -46,8 +43,8 @@ public class PsqlStore implements Store, AutoCloseable {
             ps.setString(3, post.getLink());
             ps.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
             ps.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -100,8 +97,8 @@ public class PsqlStore implements Store, AutoCloseable {
                         resultSet.getTimestamp("created")
                                  .toLocalDateTime());
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return post;
     }
@@ -118,8 +115,12 @@ public class PsqlStore implements Store, AutoCloseable {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Properties properties = new Properties();
+        InputStream in = Grabber.class
+                .getClassLoader()
+                .getResourceAsStream("psql.properties");
+        properties.load(in);
         PsqlStore psqlStore = new PsqlStore(properties);
         Post java = new SqlRuParse()
                 .detail("https://www.sql.ru/forum/1336341/java-razrabotchik-v-finteh-kompaniu");
