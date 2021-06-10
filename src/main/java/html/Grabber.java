@@ -3,6 +3,7 @@ package html;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
@@ -29,11 +30,12 @@ public class Grabber implements Grab {
         return scheduler;
     }
 
-    public void cfg() throws Exception {
-        InputStream in = Grabber.class
+    public void cfg() throws IOException {
+        try (InputStream in = Grabber.class
                 .getClassLoader()
-                .getResourceAsStream("psql.properties");
-        cfg.load(in);
+                .getResourceAsStream("psql.properties")) {
+            cfg.load(in);
+        }
     }
 
     @Override
